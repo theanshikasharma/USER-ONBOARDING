@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+
+  mongodb:
+    image: mongo:7.0
+    container_name: htds-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - htds-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: htds-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - htds-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: htds-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: htds-zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://htds-kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - htds-network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: htds-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - htds-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: htds-app
+    depends_on:
+      - mongodb
+      - kafka
+      - rabbitmq
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    networks:
+      - htds-network
+
+volumes:
+  mongo_data:
+
+networks:
+  htds-network:
+    driver: bridge
