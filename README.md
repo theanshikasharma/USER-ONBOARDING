@@ -291,6 +291,6 @@ This is a demo/backend onboarding application built for learning and practical i
 - OTP-based verification flows
 - Credential validation and security basics
 
-## Resume-Friendly Summary
+## Summary
 
 > Developed a Spring Boot-based user onboarding and authentication backend using Java, MongoDB, Kafka, and RabbitMQ. Implemented OTP-based registration flow, credential storage using SHA-256 hashing, and login validation with a layered architecture. The project includes REST APIs for onboarding, verification, and authentication, and was designed for local demo/testing purposes.
